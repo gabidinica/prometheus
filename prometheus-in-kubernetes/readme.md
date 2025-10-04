@@ -110,3 +110,59 @@ kubectl describe deployment monitoring-kube-prometheus-operator -n monitoring > 
 ```
 
 > Saves the detailed Deployment information to oper.yaml
+
+## Access Prometheus UI
+
+### 1. Port-Forward Prometheus Service
+```bash
+kubectl port-forward service/monitoring-kube-prometheus-prometheus -n monitoring 9090:9090 &
+```
+
+### 2. Open Prometheus UI
+
+- Copy the IP address `http://localhost:9090` into your browser
+- Navigate to Status → Targets to see the list of monitored components
+
+## Access Grafana UI
+
+### 1. Port-Forward Grafana Service
+```bash
+kubectl port-forward service/monitoring-grafana -n monitoring 8080:8080 &
+```
+
+### 2. Open Grafana in Browser
+
+- Copy the IP address:8080 in your browser
+- Default credentials:
+	- Username: admin
+	- Password: prom-operator
+
+## Trigger CPU Spike with Multiple Requests
+
+### 1. Deploy a BusyBox Pod for Curl
+Use the following command to run a temporary pod with curl installed:
+```bash
+kubectl run curl-test --image=radial/busyboxplus:curl -i --tty --rm
+```
+
+> This pod can be used to send multiple requests to your application to simulate CPU load.
+
+## Create a Script to Stress Test the Application Endpoint
+
+### 1. Create `test.sh` Script
+```bash
+vim test.sh
+```
+
+### 2. Add the Following Content
+
+```bash
+for i in $(seq 1 10000)
+do
+  curl ae4aee0715edc46b988c6ce67121bf57-1459479566.eu-west-3.elb.amazonaws.com > test.txt
+done
+```
+
+> This script sends 10,000 requests to the application endpoint (replace the URL with your actual external load balancer endpoint). Output of each request is saved to test.txt.
+
+You can check the changes in Grafana Dashboard.
